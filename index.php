@@ -1,8 +1,7 @@
 <?php 
 include('./connection.php');
-
-
 ?>
+
 <!doctype html>
 <html lang="en">
     <head>
@@ -31,13 +30,13 @@ include('./connection.php');
                 <input type="text" name="name" placeholder="Name" class="form-control">
             </div>
             <div class="my-2">
-                <select name="manager" class="form-control">
-                    <option>None</option>
+                <select name="p_id" class="form-control">
+                    <option value=''>None</option>
                     <?php
-                    $q = "select * from categories where parent_id is NULL";
+                    $q = "select * from categories where p_id is NULL";
                     $res = mysqli_query($con , $q);
                     foreach($res as $r){
-                        echo "<option value='$r[id]'>$r[id]</option>";
+                        echo "<option value='$r[id]'>$r[id] . $r[name]</option>";
                     }
                     ?>
                     
@@ -49,6 +48,39 @@ include('./connection.php');
         </form>
 
 
+        <!-- Fetching code -->
+        <?php
+
+
+        $q = "select * from categories";
+        $result = mysqli_query($con , $q);
+        $categoryTree = [];
+        foreach ($result as $r) {
+        if ($r['p_id'] === null) {
+            $categoryTree[$r['id']] = ['name' => $r['name'], 'subcategories' => []];
+        } else {
+            $categoryTree[$r['p_id']]['subcategories'][] = $r;
+        }
+    }
+
+        // Generate HTML
+        $html = '<ul>';
+        foreach ($categoryTree as $parent) {
+        $html .= '<li>' . htmlspecialchars($parent['name']);
+        if (!empty($parent['subcategories'])) {
+            $html .= '<ul>';
+            foreach ($parent['subcategories'] as $child) {
+            $html .= '<li>' . htmlspecialchars($child['name']) . '</li>';
+        }
+        $html .= '</ul>';
+    }
+        $html .= '</li>';
+    }
+    $html .= '</ul>';    
+    ?>
+
+<h1>Categories</h1>
+    <?php echo $html; ?>
 
 
 
