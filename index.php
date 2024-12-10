@@ -31,7 +31,7 @@ include('./connection.php');
             </div>
             <div class="my-2">
                 <select name="p_id" class="form-control">
-                    <option value=''>None</option>
+                    <option value="NULL">None</option>
                     <?php
                     $q = "select * from categories where p_id is NULL";
                     $res = mysqli_query($con , $q);
