@@ -64,19 +64,36 @@ include('./connection.php');
     }
 
         // Generate HTML
-        $html = '<ul>';
-        foreach ($categoryTree as $parent) {
-        $html .= '<li>' . htmlspecialchars($parent['name']);
+        //     $html = '<ul>';
+        //     foreach ($categoryTree as $parent) {
+        //     $html .= '<li>' . htmlspecialchars($parent['name']);
+        //     if (!empty($parent['subcategories'])) {
+        //         $html .= '<ul>';
+        //         foreach ($parent['subcategories'] as $child) {
+        //         $html .= '<li>' . htmlspecialchars($child['name']) . '</li>';
+        //     }
+        //     $html .= '</ul>';
+        // }
+        //     $html .= '</li>';
+        // }
+        // $html .= '</ul>';   
+        
+        
+
+    //new code
+    $html = '<ul>';
+    foreach ($categoryTree as $id => $parent) {
+        $html .= '<li draggable="true" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event, ' . $id . ')" data-id="' . $id . '">' . htmlspecialchars($parent['name']);
         if (!empty($parent['subcategories'])) {
             $html .= '<ul>';
             foreach ($parent['subcategories'] as $child) {
-            $html .= '<li>' . htmlspecialchars($child['name']) . '</li>';
+                $html .= '<li draggable="true" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event, ' . $child['id'] . ')" data-id="' . $child['id'] . '">' . htmlspecialchars($child['name']) . '</li>';
+            }
+            $html .= '</ul>';
         }
-        $html .= '</ul>';
-    }
         $html .= '</li>';
     }
-    $html .= '</ul>';    
+    $html .= '</ul>';
     ?>
 
 <h1>Categories</h1>
@@ -98,5 +115,50 @@ include('./connection.php');
             integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
             crossorigin="anonymous"
         ></script>
+
+        <script>
+let draggedElementId = null;
+
+// When dragging starts
+function onDragStart(event) {
+    draggedElementId = event.target.getAttribute("data-id");
+}
+
+// Allow dropping
+function onDragOver(event) {
+    event.preventDefault();
+}
+
+// Handle the drop
+function onDrop(event, targetId) {
+    event.preventDefault();
+    if (draggedElementId !== targetId) {
+        // Update the database
+        updateCategoryParent(draggedElementId, targetId);
+    }
+}
+
+// AJAX request to update the database
+function updateCategoryParent(childId, newParentId) {
+    fetch("./updateCategoryParent.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ childId: childId, newParentId: newParentId }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                alert("Category parent updated successfully.");
+                location.reload(); // Refresh the page to reflect changes
+            } else {
+                alert("Failed to update category parent.");
+            }
+        })
+        .catch((error) => console.error("Error:", error));
+}
+</script>
+
     </body>
 </html>
